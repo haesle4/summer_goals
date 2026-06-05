@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="auth-container" class="auth-container">
+      <div class="auth-card">
+        <h1 class="app-title">Habit Tracker</h1>
+        <div id="login-form" class="auth-form">
+          <h2>Login</h2>
+          <input
+            type="text"
+            id="login-username"
+            placeholder="Username"
+            class="input-field"
+          />
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Password"
+            class="input-field"
+          />
+          <button onclick="login()" class="btn btn-primary">Login</button>
+          <p class="auth-switch">
+            Don't have an account?
+            <a href="#" onclick="showSignup()">Sign up</a>
+          </p>
+        </div>
+        <div id="signup-form" class="auth-form hidden">
+          <h2>Create Account</h2>
+          <input
+            type="text"
+            id="signup-username"
+            placeholder="Username"
+            class="input-field"
+          />
+          <input
+            type="password"
+            id="signup-password"
+            placeholder="Password"
+            class="input-field"
+          />
+          <input
+            type="password"
+            id="signup-confirm"
+            placeholder="Confirm Password"
+            class="input-field"
+          />
+          <button onclick="signup()" class="btn btn-primary">Sign Up</button>
+          <p class="auth-switch">
+            Already have an account? <a href="#" onclick="showLogin()">Login</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="app-container" class="app-container hidden">
+      <header class="header">
+        <h1 class="app-title">Habit Tracker</h1>
+        <div class="header-actions">
+          <span class="username-display" id="current-user"></span>
+          <button onclick="showCreateHabit()" class="btn btn-secondary">
+            Create Habit
+          </button>
+          <button onclick="logout()" class="btn btn-outline">Logout</button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <div id="habits-list" class="habits-list"></div>
+      </main>
+    </div>
+
+    <div id="create-habit-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Habit</h2>
+          <button onclick="closeCreateHabit()" class="close-btn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="habit-title"
+            placeholder="Habit Title"
+            class="input-field"
+          />
+          <textarea
+            id="habit-description"
+            placeholder="Description"
+            class="textarea-field"
+            rows="4"
+          ></textarea>
+          <input
+            type="text"
+            id="habit-goal"
+            placeholder="Goal (e.g., Daily, 3x per week)"
+            class="input-field"
+          />
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeCreateHabit()" class="btn btn-outline">
+            Cancel
+          </button>
+          <button onclick="createHabit()" class="btn btn-primary">
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="habit-detail-modal" class="modal hidden">
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h2 id="detail-title"></h2>
+          <button onclick="closeHabitDetail()" class="close-btn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-section">
+            <h3>Created by</h3>
+            <p id="detail-creator"></p>
+          </div>
+          <div class="detail-section">
+            <h3>Description</h3>
+            <p id="detail-description"></p>
+          </div>
+          <div class="detail-section">
+            <h3>Goal</h3>
+            <p id="detail-goal"></p>
+          </div>
+          <div class="detail-section">
+            <h3>Participants</h3>
+            <div id="detail-participants" class="participants-list"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeHabitDetail()" class="btn btn-outline">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
