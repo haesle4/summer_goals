@@ -1,8 +1,9 @@
-# Habit Tracker App
+# Summer Goals App
 
 A collaborative habit tracking application with user authentication and real-time data sharing.
 
 ## Features
+
 - User authentication (login/signup)
 - Create and share habits
 - Join habits created by others
@@ -71,8 +72,8 @@ CREATE POLICY "Anyone can update habits" ON habits
 
 ```javascript
 const SUPABASE_CONFIG = {
-    url: 'YOUR_PROJECT_URL',
-    anonKey: 'YOUR_ANON_KEY'
+  url: "YOUR_PROJECT_URL",
+  anonKey: "YOUR_ANON_KEY",
 };
 ```
 
@@ -89,6 +90,7 @@ Then open http://localhost:8080 in your browser.
 The app is already configured for Netlify deployment. Just push your changes and deploy!
 
 ## Tech Stack
+
 - Frontend: HTML, CSS, JavaScript
 - Backend: Supabase (PostgreSQL)
 - Hosting: Netlify

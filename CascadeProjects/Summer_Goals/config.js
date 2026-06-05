@@ -1,4 +1,4 @@
 const SUPABASE_CONFIG = {
-    url: 'YOUR_SUPABASE_URL',
-    anonKey: 'YOUR_SUPABASE_ANON_KEY'
+  url: "https://lyakzjchugbyhwykbdeb.supabase.co",
+  anonKey: "sb_publishable_07tfEw9Rik63EwohdTwSoQ_5oKl0hLt",
 };
