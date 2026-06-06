@@ -212,6 +212,41 @@ body {
     gap: 20px;
 }
 
+.chat-access {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 240px;
+    padding-bottom: 160px;
+    color: var(--orange);
+}
+
+.chat-access-text {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.chat-access-arrow {
+    width: 60px;
+    height: 30px;
+}
+
+.chat-access-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--orange);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.chat-access-btn:hover {
+    opacity: 0.75;
+}
+
 .habit-card {
     background: var(--white);
     border-radius: 16px;

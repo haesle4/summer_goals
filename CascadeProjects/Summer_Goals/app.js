@@ -114,15 +114,13 @@ async function showApp() {
 function showHabitsPage() {
     document.getElementById('habits-page').classList.remove('hidden');
     document.getElementById('chat-page').classList.add('hidden');
-    document.getElementById('nav-habits-btn').classList.add('nav-active');
-    document.getElementById('nav-chat-btn').classList.remove('nav-active');
+    document.getElementById('nav-habits-btn').classList.add('hidden');
 }
 
 async function showChatPage() {
     document.getElementById('habits-page').classList.add('hidden');
     document.getElementById('chat-page').classList.remove('hidden');
-    document.getElementById('nav-chat-btn').classList.add('nav-active');
-    document.getElementById('nav-habits-btn').classList.remove('nav-active');
+    document.getElementById('nav-habits-btn').classList.remove('hidden');
     wheelOffset = 0;
     await loadMessages();
 }
