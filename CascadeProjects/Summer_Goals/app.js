@@ -3,6 +3,8 @@ const supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey
 
 let currentUser = null;
 let habits = [];
+let currentHabitId = null;
+let comments = [];
 
 function initApp() {
     checkAuth();
@@ -33,6 +35,18 @@ function setupRealtimeSubscription() {
             { event: '*', schema: 'public', table: 'habits' },
             (payload) => {
                 loadHabits();
+            }
+        )
+        .subscribe();
+    
+    supabaseClient
+        .channel('comments-channel')
+        .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'comments' },
+            (payload) => {
+                if (currentHabitId) {
+                    loadComments(currentHabitId);
+                }
             }
         )
         .subscribe();
@@ -250,10 +264,6 @@ async function toggleParticipation(habitId) {
     let newParticipants;
     
     if (index > -1) {
-        if (habit.creator === currentUser) {
-            alert('You cannot leave a habit you created');
-            return;
-        }
         newParticipants = habit.participants.filter(p => p !== currentUser);
     } else {
         newParticipants = [...habit.participants, currentUser];
@@ -274,9 +284,11 @@ async function toggleParticipation(habitId) {
     }
 }
 
-function showHabitDetail(habitId) {
+async function showHabitDetail(habitId) {
     const habit = habits.find(h => h.id === habitId);
     if (!habit) return;
+    
+    currentHabitId = habitId;
     
     document.getElementById('detail-title').textContent = habit.title;
     document.getElementById('detail-creator').textContent = habit.creator;
@@ -288,11 +300,142 @@ function showHabitDetail(habitId) {
         `<span class="participant-badge">${escapeHtml(participant)}</span>`
     ).join('');
     
+    document.getElementById('comment-input').value = '';
+    await loadComments(habitId);
+    
+    const deleteBtn = document.getElementById('delete-habit-btn');
+    if (habit.creator === currentUser) {
+        deleteBtn.style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+    
     document.getElementById('habit-detail-modal').classList.remove('hidden');
 }
 
 function closeHabitDetail() {
     document.getElementById('habit-detail-modal').classList.add('hidden');
+    currentHabitId = null;
+    comments = [];
+}
+
+async function deleteHabit() {
+    if (!currentHabitId) return;
+    
+    const habit = habits.find(h => h.id === currentHabitId);
+    if (!habit) return;
+    
+    if (habit.creator !== currentUser) {
+        alert('You can only delete habits you created');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete "${habit.title}"? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('habits')
+            .delete()
+            .eq('id', currentHabitId);
+        
+        if (error) throw error;
+        
+        closeHabitDetail();
+        await loadHabits();
+    } catch (error) {
+        console.error('Error deleting habit:', error);
+        alert('Failed to delete habit. Please try again.');
+    }
+}
+
+async function loadComments(habitId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('comments')
+            .select('*')
+            .eq('habit_id', habitId)
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        comments = data || [];
+        renderComments();
+    } catch (error) {
+        console.error('Error loading comments:', error);
+    }
+}
+
+function renderComments() {
+    const commentsList = document.getElementById('comments-list');
+    
+    if (comments.length === 0) {
+        commentsList.innerHTML = '<p style="color: var(--text-light); font-style: italic;">No comments yet. Be the first to comment!</p>';
+        return;
+    }
+    
+    commentsList.innerHTML = comments.map(comment => {
+        const date = new Date(comment.created_at);
+        const timeAgo = getTimeAgo(date);
+        
+        return `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <span class="comment-author">${escapeHtml(comment.username)}</span>
+                    <span class="comment-time">${timeAgo}</span>
+                </div>
+                <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function postComment() {
+    const commentText = document.getElementById('comment-input').value.trim();
+    
+    if (!commentText) {
+        alert('Please enter a comment');
+        return;
+    }
+    
+    if (!currentHabitId) {
+        alert('No habit selected');
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('comments')
+            .insert([{
+                habit_id: currentHabitId,
+                username: currentUser,
+                comment_text: commentText
+            }]);
+        
+        if (error) throw error;
+        
+        document.getElementById('comment-input').value = '';
+        await loadComments(currentHabitId);
+    } catch (error) {
+        console.error('Error posting comment:', error);
+        alert('Failed to post comment. Please try again.');
+    }
+}
+
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks}w ago`;
+    return date.toLocaleDateString();
 }
 
 function escapeHtml(text) {

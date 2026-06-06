@@ -153,8 +153,31 @@
             <h3>Participants</h3>
             <div id="detail-participants" class="participants-list"></div>
           </div>
+          <div class="detail-section">
+            <h3>Comments</h3>
+            <div id="comments-list" class="comments-list"></div>
+            <div class="comment-input-container">
+              <textarea
+                id="comment-input"
+                placeholder="Add a comment..."
+                class="comment-textarea"
+                rows="2"
+              ></textarea>
+              <button onclick="postComment()" class="btn btn-primary btn-sm">
+                Post Comment
+              </button>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
+          <button
+            id="delete-habit-btn"
+            onclick="deleteHabit()"
+            class="btn btn-danger"
+            style="display: none"
+          >
+            Delete Habit
+          </button>
           <button onclick="closeHabitDetail()" class="btn btn-outline">
             Close
           </button>
