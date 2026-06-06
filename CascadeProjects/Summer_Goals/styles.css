@@ -216,10 +216,11 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 10px;
     margin-top: 240px;
     padding-bottom: 160px;
+    padding-right: 40px;
     color: var(--orange);
 }
 
