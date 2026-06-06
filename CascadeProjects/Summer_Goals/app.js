@@ -9,6 +9,7 @@ let commentCounts = {};
 let messages = [];
 let wheelOffset = 0;
 let visibleWindow = [];
+let bubbleZIndex = 100;
 
 const WHEEL_SLOTS = 25;
 const WHEEL_CHAR_LIMIT = 25;
@@ -207,7 +208,8 @@ function renderWheel() {
             <div class="wheel-message"
                  onmouseenter="focusMessage(${i})"
                  onmouseleave="resetCenter()"
-                 style="left: ${left}%; top: ${top}%; opacity: ${opacity}; transform: translate(-50%, -50%) rotate(${rotation}deg);">
+                 onclick="spawnBubble(${i})"
+                 style="left: ${left}%; top: ${top}%; opacity: ${opacity}; transform: translate(-50%, -50%) rotate(${rotation}deg); cursor: pointer;">
                 <span class="wheel-author">${escapeHtml(msg.username)}</span>
                 <span class="wheel-text">${escapeHtml(text)}</span>
             </div>
@@ -236,6 +238,62 @@ function focusMessage(i) {
 
 function resetCenter() {
     setCenter(visibleWindow[0]);
+}
+
+function spawnBubble(i) {
+    const msg = visibleWindow[i];
+    if (!msg) return;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    
+    const offset = (bubbleZIndex - 100) * 24;
+    bubble.style.left = `${Math.min(120 + offset, window.innerWidth - 320)}px`;
+    bubble.style.top = `${Math.min(120 + offset, window.innerHeight - 160)}px`;
+    bubble.style.zIndex = ++bubbleZIndex;
+    
+    bubble.innerHTML = `
+        <div class="bubble-header">
+            <span class="bubble-author">${escapeHtml(msg.username)}</span>
+            <button class="bubble-close">&times;</button>
+        </div>
+        <div class="bubble-text">${escapeHtml(msg.message_text || '')}</div>
+    `;
+    
+    document.body.appendChild(bubble);
+    
+    bubble.querySelector('.bubble-close').addEventListener('click', () => {
+        bubble.remove();
+    });
+    
+    makeDraggable(bubble);
+}
+
+function makeDraggable(bubble) {
+    const header = bubble.querySelector('.bubble-header');
+    let offsetX = 0;
+    let offsetY = 0;
+    
+    function onMouseMove(e) {
+        bubble.style.left = `${e.clientX - offsetX}px`;
+        bubble.style.top = `${e.clientY - offsetY}px`;
+    }
+    
+    function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+    
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('bubble-close')) return;
+        const rect = bubble.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        bubble.style.zIndex = ++bubbleZIndex;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        e.preventDefault();
+    });
 }
 
 function showLogin() {
@@ -644,7 +702,7 @@ document.getElementById('chat-message-input').addEventListener('keypress', funct
 });
 
 let scrollAccumulator = 0;
-const SCROLL_THRESHOLD = 10;
+const SCROLL_THRESHOLD = 20;
 
 document.getElementById('chat-wheel').addEventListener('wheel', function(e) {
     e.preventDefault();

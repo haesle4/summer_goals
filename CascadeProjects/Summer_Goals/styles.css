@@ -584,7 +584,6 @@ body {
     transform-origin: center center;
     white-space: nowrap;
     pointer-events: auto;
-    cursor: pointer;
 }
 
 .wheel-center {
@@ -676,4 +675,52 @@ body {
     outline: none;
     border-color: var(--orange);
     box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+}
+
+.message-bubble {
+    position: fixed;
+    width: 280px;
+    background: var(--white);
+    border: 2px solid var(--orange);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px var(--shadow);
+    overflow: hidden;
+    user-select: none;
+}
+
+.bubble-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--gold) 100%);
+    cursor: move;
+}
+
+.bubble-author {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--white);
+}
+
+.bubble-close {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.bubble-close:hover {
+    opacity: 0.8;
+}
+
+.bubble-text {
+    padding: 14px;
+    font-size: 16px;
+    color: var(--text-dark);
+    line-height: 1.4;
+    word-break: break-word;
 }
