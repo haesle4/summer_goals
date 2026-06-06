@@ -5,6 +5,7 @@ let currentUser = null;
 let habits = [];
 let currentHabitId = null;
 let comments = [];
+let commentCounts = {};
 
 function initApp() {
     checkAuth();
@@ -21,10 +22,28 @@ async function loadHabits() {
         if (error) throw error;
         
         habits = data || [];
+        await loadCommentCounts();
         renderHabits();
     } catch (error) {
         console.error('Error loading habits:', error);
         alert('Failed to load habits. Please refresh the page.');
+    }
+}
+
+async function loadCommentCounts() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('comments')
+            .select('habit_id');
+        
+        if (error) throw error;
+        
+        commentCounts = {};
+        (data || []).forEach(comment => {
+            commentCounts[comment.habit_id] = (commentCounts[comment.habit_id] || 0) + 1;
+        });
+    } catch (error) {
+        console.error('Error loading comment counts:', error);
     }
 }
 
@@ -229,6 +248,7 @@ function renderHabits() {
     habitsList.innerHTML = habits.map(habit => {
         const isParticipant = habit.participants.includes(currentUser);
         const participantNames = habit.participants.join(', ');
+        const commentCount = commentCounts[habit.id] || 0;
         
         return `
             <div class="habit-card" onclick="showHabitDetail('${habit.id}')">
@@ -237,6 +257,14 @@ function renderHabits() {
                         <div class="habit-creator">Created by ${habit.creator}</div>
                         <h3 class="habit-title">${escapeHtml(habit.title)}</h3>
                     </div>
+                    ${commentCount > 0 ? `
+                    <div class="comment-counter">
+                        <svg class="comment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span class="comment-count">${commentCount}</span>
+                    </div>
+                    ` : ''}
                 </div>
                 <p class="habit-description">${escapeHtml(habit.description)}</p>
                 <div class="habit-footer">
@@ -477,3 +505,16 @@ window.onclick = function(event) {
         closeHabitDetail();
     }
 }
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const detailModal = document.getElementById('habit-detail-modal');
+        const createModal = document.getElementById('create-habit-modal');
+        
+        if (!detailModal.classList.contains('hidden')) {
+            closeHabitDetail();
+        } else if (!createModal.classList.contains('hidden')) {
+            closeCreateHabit();
+        }
+    }
+});

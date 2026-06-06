@@ -228,6 +228,30 @@ body {
     gap: 16px;
 }
 
+.comment-counter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--orange);
+    padding: 8px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+}
+
+.comment-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--white);
+}
+
+.comment-count {
+    color: var(--white);
+    font-weight: 700;
+    font-size: 14px;
+    min-width: 16px;
+    text-align: center;
+}
+
 .habit-creator {
     color: var(--text-light);
     font-size: 14px;
