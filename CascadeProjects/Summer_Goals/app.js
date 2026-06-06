@@ -6,6 +6,12 @@ let habits = [];
 let currentHabitId = null;
 let comments = [];
 let commentCounts = {};
+let messages = [];
+let wheelOffset = 0;
+let visibleWindow = [];
+
+const WHEEL_SLOTS = 25;
+const WHEEL_CHAR_LIMIT = 25;
 
 function initApp() {
     checkAuth();
@@ -69,6 +75,16 @@ function setupRealtimeSubscription() {
             }
         )
         .subscribe();
+    
+    supabaseClient
+        .channel('messages-channel')
+        .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'messages' },
+            (payload) => {
+                loadMessages();
+            }
+        )
+        .subscribe();
 }
 
 function checkAuth() {
@@ -90,7 +106,136 @@ async function showApp() {
     document.getElementById('auth-container').classList.add('hidden');
     document.getElementById('app-container').classList.remove('hidden');
     document.getElementById('current-user').textContent = currentUser;
+    showHabitsPage();
     await loadHabits();
+}
+
+function showHabitsPage() {
+    document.getElementById('habits-page').classList.remove('hidden');
+    document.getElementById('chat-page').classList.add('hidden');
+    document.getElementById('nav-habits-btn').classList.add('nav-active');
+    document.getElementById('nav-chat-btn').classList.remove('nav-active');
+}
+
+async function showChatPage() {
+    document.getElementById('habits-page').classList.add('hidden');
+    document.getElementById('chat-page').classList.remove('hidden');
+    document.getElementById('nav-chat-btn').classList.add('nav-active');
+    document.getElementById('nav-habits-btn').classList.remove('nav-active');
+    wheelOffset = 0;
+    await loadMessages();
+}
+
+async function loadMessages() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1000);
+        
+        if (error) throw error;
+        
+        messages = data || [];
+        clampWheelOffset();
+        renderWheel();
+    } catch (error) {
+        console.error('Error loading messages:', error);
+    }
+}
+
+function clampWheelOffset() {
+    const maxOffset = Math.max(0, messages.length - 1);
+    if (wheelOffset > maxOffset) wheelOffset = maxOffset;
+    if (wheelOffset < 0) wheelOffset = 0;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-message-input');
+    const text = input.value.trim();
+    
+    if (!text) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('messages')
+            .insert([{
+                username: currentUser,
+                message_text: text
+            }]);
+        
+        if (error) throw error;
+        
+        input.value = '';
+        wheelOffset = 0;
+        await loadMessages();
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message. Please try again.');
+    }
+}
+
+function renderWheel() {
+    const wheel = document.getElementById('chat-wheel');
+    if (!wheel) return;
+    
+    if (messages.length === 0) {
+        wheel.innerHTML = '<div class="wheel-empty">No messages yet. Be the first to say something!</div>';
+        return;
+    }
+    
+    const radiusPct = 28;
+    const angleStep = 360 / WHEEL_SLOTS;
+    
+    visibleWindow = messages.slice(wheelOffset, wheelOffset + WHEEL_SLOTS);
+    
+    const messagesHtml = visibleWindow.map((msg, i) => {
+        const angle = 180 + i * angleStep;
+        const rad = (angle * Math.PI) / 180;
+        const left = 50 + radiusPct * Math.cos(rad);
+        const top = 50 + radiusPct * Math.sin(rad);
+        const rotation = i * angleStep;
+        
+        const fullText = msg.message_text || '';
+        const text = fullText.length > WHEEL_CHAR_LIMIT
+            ? fullText.substring(0, WHEEL_CHAR_LIMIT)
+            : fullText;
+        
+        const opacity = 1 - (i / (WHEEL_SLOTS - 1)) * 0.95;
+        
+        return `
+            <div class="wheel-message"
+                 onmouseenter="focusMessage(${i})"
+                 onmouseleave="resetCenter()"
+                 style="left: ${left}%; top: ${top}%; opacity: ${opacity}; transform: translate(-50%, -50%) rotate(${rotation}deg);">
+                <span class="wheel-author">${escapeHtml(msg.username)}</span>
+                <span class="wheel-text">${escapeHtml(text)}</span>
+            </div>
+        `;
+    }).join('');
+    
+    const dividerHtml = `<div class="wheel-divider" style="left: 0; top: 54%;"></div>`;
+    
+    wheel.innerHTML = messagesHtml + dividerHtml + '<div class="wheel-center" id="wheel-center"></div>';
+    
+    resetCenter();
+}
+
+function setCenter(msg) {
+    const center = document.getElementById('wheel-center');
+    if (!center || !msg) return;
+    center.innerHTML = `
+        <span class="wheel-center-author">${escapeHtml(msg.username)}</span>
+        <span class="wheel-center-text">${escapeHtml(msg.message_text || '')}</span>
+    `;
+}
+
+function focusMessage(i) {
+    setCenter(visibleWindow[i]);
+}
+
+function resetCenter() {
+    setCenter(visibleWindow[0]);
 }
 
 function showLogin() {
@@ -493,6 +638,31 @@ document.getElementById('signup-password').addEventListener('keypress', function
 document.getElementById('signup-confirm').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') signup();
 });
+
+document.getElementById('chat-message-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') sendMessage();
+});
+
+let scrollAccumulator = 0;
+const SCROLL_THRESHOLD = 10;
+
+document.getElementById('chat-wheel').addEventListener('wheel', function(e) {
+    e.preventDefault();
+    
+    scrollAccumulator += e.deltaY;
+    
+    if (Math.abs(scrollAccumulator) < SCROLL_THRESHOLD) return;
+    
+    const maxOffset = Math.max(0, messages.length - 1);
+    if (scrollAccumulator > 0) {
+        wheelOffset = Math.max(wheelOffset - 1, 0);
+    } else {
+        wheelOffset = Math.min(wheelOffset + 1, maxOffset);
+    }
+    
+    scrollAccumulator = 0;
+    renderWheel();
+}, { passive: false });
 
 window.onclick = function(event) {
     const createModal = document.getElementById('create-habit-modal');

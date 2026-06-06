@@ -77,6 +77,20 @@
         <h1 class="app-title">Summer Goals</h1>
         <div class="header-actions">
           <span class="username-display" id="current-user"></span>
+          <button
+            id="nav-habits-btn"
+            onclick="showHabitsPage()"
+            class="btn btn-secondary"
+          >
+            Habits
+          </button>
+          <button
+            id="nav-chat-btn"
+            onclick="showChatPage()"
+            class="btn btn-secondary"
+          >
+            Chat
+          </button>
           <button onclick="showCreateHabit()" class="btn btn-secondary">
             Create Habit
           </button>
@@ -84,8 +98,26 @@
         </div>
       </header>
 
-      <main class="main-content">
+      <main id="habits-page" class="main-content">
         <div id="habits-list" class="habits-list"></div>
+      </main>
+
+      <main id="chat-page" class="chat-page hidden">
+        <div class="wheel-container">
+          <div id="chat-wheel" class="chat-wheel"></div>
+        </div>
+        <div class="chat-input-bar">
+          <input
+            type="text"
+            id="chat-message-input"
+            placeholder="Type a message..."
+            class="chat-input-field"
+            maxlength="200"
+          />
+          <button onclick="sendMessage()" class="btn btn-primary btn-sm">
+            Send
+          </button>
+        </div>
       </main>
     </div>
 
