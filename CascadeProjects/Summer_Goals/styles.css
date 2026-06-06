@@ -114,12 +114,13 @@ body {
 
 .btn-outline {
     background: transparent;
-    border: 2px solid var(--orange);
-    color: var(--orange);
+    border: 2px solid transparent;
+    color: var(--white);
 }
 
 .btn-outline:hover {
-    background: var(--orange);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--white);
     color: var(--white);
 }
 
