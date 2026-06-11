@@ -25,5 +25,8 @@ mkdir -p dist
     .
 ) | tar -xf - -C dist
 
+# App netlify.toml is build config only — do not publish it with the site.
+rm -f dist/netlify.toml
+
 echo "Prepared Netlify publish bundle from: ${SRC}"
 echo "Files: $(find dist -type f | wc -l)"

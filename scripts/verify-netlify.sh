@@ -16,6 +16,25 @@ test -f dist/config.js || { echo "MISSING dist/config.js"; exit 1; }
 test -d dist/partials || { echo "MISSING dist/partials/"; exit 1; }
 test -f dist/partials/dashboard.html || { echo "MISSING dist/partials/dashboard.html"; exit 1; }
 test -f dist/assets/beach-illustration.png || { echo "MISSING dist/assets/beach-illustration.png"; exit 1; }
+test -f dist/_headers || { echo "MISSING dist/_headers"; exit 1; }
+
+echo "==> Validating _headers formatting"
+# Path rules must start at column 1; header lines must use exactly two spaces.
+while IFS= read -r line || [[ -n "$line" ]]; do
+  [[ -z "$line" ]] && continue
+  if [[ "$line" =~ ^/ ]]; then
+    [[ "$line" =~ ^[[:space:]] ]] && { echo "INVALID _headers path indent: $line"; exit 1; }
+  elif [[ "$line" =~ ^[[:space:]] ]]; then
+    [[ ! "$line" =~ ^\ \ [^[:space:]] ]] && { echo "INVALID _headers header indent: $line"; exit 1; }
+  else
+    echo "INVALID _headers line: $line"; exit 1
+  fi
+done < dist/_headers
+
+# Published config must not ship SPA catch-all redirects (breaks header checks).
+if [[ -f dist/netlify.toml ]] && grep -q 'to = "/index.html"' dist/netlify.toml; then
+  echo "INVALID dist/netlify.toml still contains SPA catch-all redirect"; exit 1
+fi
 
 # Simulate from UI base directory (Netlify sometimes runs builds there)
 echo "==> Simulating UI base directory = CascadeProjects/Summer_Goals"
