@@ -64,14 +64,6 @@ CREATE POLICY "Anyone can update habits" ON habits
     FOR UPDATE USING (true);
 ```
 
-### 2b. Run the v2 migration (required for day scheduling + per-habit chat)
-
-Copy and run everything in [`supabase/migration.sql`](supabase/migration.sql) in the SQL Editor. This adds:
-
-- `habit_memberships` — which days you do each habit + completion dates
-- `messages.habit_id` — `NULL` = General chat, otherwise per-habit chat
-- `habits.category` — wellness / social / learning (for the chart)
-
 ### 3. Get Your Supabase Credentials
 
 1. In your Supabase project, go to Settings > API
