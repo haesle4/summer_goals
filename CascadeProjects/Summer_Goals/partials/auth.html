@@ -1,0 +1,72 @@
+<div class="auth-page">
+  <h1 class="auth-logo">Summer Goals</h1>
+  <span class="auth-sun icon-sun-char" aria-hidden="true">☼</span>
+
+  <div class="auth-form-wrapper">
+    <div id="login-form" class="auth-form">
+      <div class="auth-heading">
+        <h2>Welcome back</h2>
+        <p>Enter your details to log in</p>
+      </div>
+      <div class="auth-fields">
+        <input
+          type="text"
+          id="login-username"
+          placeholder="username"
+          class="auth-field"
+          autocomplete="username"
+        />
+        <input
+          type="password"
+          id="login-password"
+          placeholder="password"
+          class="auth-field"
+          autocomplete="current-password"
+        />
+        <button type="button" id="login-btn" class="auth-submit">Log in!</button>
+      </div>
+      <p class="auth-switch">
+        Don't have an account?
+        <a href="#" id="show-signup-link">Sign up</a>
+      </p>
+    </div>
+
+    <div id="signup-form" class="auth-form hidden">
+      <div class="auth-heading">
+        <h2>Create an account</h2>
+        <p>Enter your PII to sign up for this app</p>
+      </div>
+      <div class="auth-fields">
+        <p class="auth-notice">
+          This site is not secure. Please do not use an important password.
+        </p>
+        <input
+          type="text"
+          id="signup-username"
+          placeholder="username"
+          class="auth-field"
+          autocomplete="username"
+        />
+        <input
+          type="password"
+          id="signup-password"
+          placeholder="password"
+          class="auth-field"
+          autocomplete="new-password"
+        />
+        <input
+          type="password"
+          id="signup-confirm"
+          placeholder="confirm password"
+          class="auth-field"
+          autocomplete="new-password"
+        />
+        <button type="button" id="signup-btn" class="auth-submit">Sign up!</button>
+      </div>
+      <p class="auth-switch">
+        Already have an account?
+        <a href="#" id="show-login-link">Log in</a>
+      </p>
+    </div>
+  </div>
+</div>
