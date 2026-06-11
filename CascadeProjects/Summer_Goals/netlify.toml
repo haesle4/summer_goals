@@ -1,3 +1,4 @@
+# Summer Goals — static site, no build step
 [build]
   publish = "."
   command = "echo 'No build required'"
