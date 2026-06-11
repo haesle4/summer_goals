@@ -1,5 +1,5 @@
-# Repo root config — app lives in CascadeProjects/Summer_Goals
+# Publish the app from its subfolder (repo root has no index.html).
+# This overrides Netlify UI base/publish settings — leave those blank in the dashboard.
 [build]
-  base = "CascadeProjects/Summer_Goals"
-  publish = "."
-  command = "npm run build"
+  publish = "CascadeProjects/Summer_Goals"
+  command = "npm run build --prefix CascadeProjects/Summer_Goals"
