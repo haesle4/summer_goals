@@ -1,0 +1,14 @@
+name: Verify Netlify bundle
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify-netlify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify publish bundle
+        run: bash scripts/verify-netlify.sh

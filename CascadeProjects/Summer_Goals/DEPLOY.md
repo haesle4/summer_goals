@@ -1,21 +1,17 @@
 # Netlify deploy fix
 
-The app lives in `CascadeProjects/Summer_Goals/`, not the repo root.
+Netlify builds run `scripts/prepare-netlify.sh`, which copies the app into `dist/`
+and publishes that folder. This works whether Netlify runs from the repo root
+or from a UI base directory of `CascadeProjects/Summer_Goals`.
 
-**Repo config:** `netlify.toml` at the repo root sets `publish = "CascadeProjects/Summer_Goals"`.
+**Before pushing deploy changes, run locally:**
 
-**If deploys still fail**, whoever owns the Netlify site should open
-**Site configuration → Build & deploy → Build settings** and clear:
+```bash
+bash scripts/verify-netlify.sh
+```
 
-| Setting | Should be |
-|---|---|
-| Base directory | *(empty)* |
-| Package directory | *(empty)* |
-| Build command | *(empty)* |
-| Publish directory | *(empty)* |
+**If Netlify still fails**, the site owner should clear all four fields under
+**Site configuration → Build & deploy → Build settings** (base, package,
+build command, publish) so the repo `netlify.toml` files take over.
 
-Let the repo `netlify.toml` handle everything. A common failure mode is
-Base = `CascadeProjects/Summer_Goals` **and** Publish = `CascadeProjects/Summer_Goals`,
-which makes Netlify look for a doubled path that does not exist.
-
-After merging, trigger **Deploys → Trigger deploy → Clear cache and deploy site**.
+Then: **Deploys → Trigger deploy → Clear cache and deploy site**.

@@ -1,5 +1,3 @@
-# Publish the app from its subfolder (repo root has no index.html).
-# This overrides Netlify UI base/publish settings — leave those blank in the dashboard.
 [build]
-  publish = "CascadeProjects/Summer_Goals"
-  command = "npm run build --prefix CascadeProjects/Summer_Goals"
+  command = "bash scripts/prepare-netlify.sh"
+  publish = "dist"
