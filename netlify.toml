@@ -1,0 +1,5 @@
+# Repo root config — app lives in CascadeProjects/Summer_Goals
+[build]
+  base = "CascadeProjects/Summer_Goals"
+  publish = "."
+  command = "npm run build"
