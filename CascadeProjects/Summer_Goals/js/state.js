@@ -8,6 +8,7 @@ export const state = {
     comments: [],
     commentCounts: {},
     messages: [],
+    feed: [],
     dashboardTab: 'habits',
     calendarMonthIndex: 0,
 };

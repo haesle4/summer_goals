@@ -104,7 +104,8 @@ export const MONTH_NAMES = [
     'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export function getGoalDeadline(habit) {
+export function getGoalDeadline(habit, membership = null) {
+    if (membership?.goal_deadline) return normalizeDateKey(membership.goal_deadline);
     const local = habit?.id ? getLocalHabitMeta(habit.id)?.deadline : null;
     return normalizeDateKey(local || habit?.deadline || '');
 }
@@ -123,7 +124,7 @@ export function isGoalCompleted(membership) {
 /** Card/list grouping for goals. */
 export function getGoalStatus(habit, membership) {
     if (!membership) return 'not-relevant';
-    const deadline = getGoalDeadline(habit);
+    const deadline = getGoalDeadline(habit, membership);
     if (!deadline) return 'not-relevant';
     if (isGoalCompleted(membership)) return 'done';
     if (deadline > todayDateString()) return 'not-relevant';
@@ -132,12 +133,7 @@ export function getGoalStatus(habit, membership) {
 
 /** Card color for goals (blue = upcoming, pink = overdue). */
 export function getGoalCardStatus(habit, membership) {
-    if (!membership) return 'not-relevant';
-    const deadline = getGoalDeadline(habit);
-    if (!deadline) return 'not-relevant';
-    if (isGoalCompleted(membership)) return 'done';
-    if (deadline > todayDateString()) return 'not-relevant';
-    return 'todo';
+    return getGoalStatus(habit, membership);
 }
 
 export function getItemStatus(habit, membership) {
@@ -159,8 +155,20 @@ export function getGoalDayStatus(deadlineKey, membership) {
 /** @returns {'todo' | 'done' | 'not-relevant'} */
 export function getHabitStatus(membership) {
     if (!membership) return 'not-relevant';
-    const days = membership.days || [];
     const completed = membership.completed_dates || [];
+    const frequency = membership.frequency || 'days';
+
+    if (frequency === 'weekly') {
+        const weekStartKey = dateToKey(getWeekStart());
+        return completed.some((d) => d >= weekStartKey) ? 'done' : 'todo';
+    }
+
+    if (frequency === 'monthly') {
+        const monthKey = todayDateString().slice(0, 7);
+        return completed.some((d) => d.startsWith(monthKey)) ? 'done' : 'todo';
+    }
+
+    const days = membership.days || [];
     const scheduledToday = days.includes(todayWeekday());
     const completedToday = completed.includes(todayDateString());
 

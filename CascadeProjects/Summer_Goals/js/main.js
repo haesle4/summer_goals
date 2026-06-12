@@ -11,6 +11,10 @@ import { bindDashboardTabs } from './dashboard.js';
 import { loadMessages, bindChatEvents, updateChatHeader } from './chat.js';
 import { bindCommentEvents } from './comments.js';
 import { bindModalEvents } from './modals.js';
+import { loadFeed, bindFeedEvents, showHomeView } from './feed.js';
+import { bindCollectiveEvents } from './collective.js';
+import { loadHomeChat, bindHomeChatEvents } from './home-chat.js';
+import { loadHomeLeaderboard, bindHomeLeaderboardEvents } from './home-leaderboard.js';
 import { setupRealtimeSubscription } from './realtime.js';
 
 async function onAuthenticated() {
@@ -18,7 +22,11 @@ async function onAuthenticated() {
         await loadHabits();
         updateChatHeader();
         await loadMessages();
+        await loadFeed();
+        await loadHomeChat();
+        await loadHomeLeaderboard();
     });
+    showHomeView();
 }
 
 async function initApp() {
@@ -31,6 +39,10 @@ async function initApp() {
     bindChatEvents();
     bindCommentEvents();
     bindModalEvents();
+    bindFeedEvents();
+    bindCollectiveEvents();
+    bindHomeChatEvents();
+    bindHomeLeaderboardEvents();
     setupRealtimeSubscription();
 
     if (checkAuth()) {

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Irish+Grover&family=Nunito:wght@400;500;600&family=Sacramento&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Irish+Grover&family=Nunito:wght@400;500;600;700&family=Sacramento&display=swap');
 
 @import 'tokens.css';
 @import 'base.css';
@@ -8,6 +8,7 @@
 @import 'chart.css';
 @import 'goal-calendar.css';
 @import 'chat.css';
+@import 'feed.css';
 @import 'modals.css';
 @import 'footer.css';
 @import 'icons.css';

@@ -17,7 +17,7 @@ function normalizeMembership(row) {
     };
 }
 
-async function fetchAllMemberships() {
+export async function fetchAllMemberships() {
     try {
         const { data, error } = await supabaseClient
             .from('habit_memberships')

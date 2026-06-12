@@ -16,6 +16,13 @@
     position: relative;
 }
 
+.nav-group-name {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
 .nav-logo {
     font-family: var(--font-display);
     font-size: 24px;

@@ -11,8 +11,11 @@ import {
     getItemLabels,
     getGoalDeadline,
     formatDeadlineShort,
+    todayDateString,
     DAY_LABELS,
 } from './utils.js';
+import { openCompletionCommentModal, removeCompletion } from './feed.js';
+import { renderCollectiveList } from './collective.js';
 import { loadComments, closeHabitDetail } from './comments.js';
 import { selectChatHabit, loadMessages } from './chat.js';
 import { sunDivider, sunIcon, personIcon, editIcon } from './icons.js';
@@ -41,8 +44,14 @@ function activeLabels() {
 
 let joinSelectedHabitId = null;
 let joinSelectedDays = [];
+let joinItemType = null;
+let createItemTypeOverride = null;
 let editHabitId = null;
 let editSelectedDays = [];
+
+function createItemType() {
+    return createItemTypeOverride || activeItemType();
+}
 
 async function updateHabitFields(habitId, { title, description, category, deadline }) {
     const payload = {
@@ -138,6 +147,7 @@ export async function loadHabits() {
         state.habits = data || [];
         await loadMemberships();
         await loadCommentCounts();
+        renderCollectiveList();
         if (state.dashboardTab === 'standings') {
             await renderLeaderboard();
         } else {
@@ -193,9 +203,17 @@ function renderHabitCard(habit, membership) {
         checkboxInner = '<span class="habit-checkbox-check">✓</span>';
     }
 
-    const scheduleMarkup = isGoal
-        ? `<div class="habit-deadline" aria-label="Deadline">${formatDeadlineShort(getGoalDeadline(habit))}</div>`
-        : `<div class="habit-progress" aria-label="Scheduled days">${renderDayDots(membership?.days)}</div>`;
+    const frequency = membership?.frequency || 'days';
+    let scheduleMarkup;
+    if (isGoal) {
+        scheduleMarkup = `<div class="habit-deadline" aria-label="Deadline">${formatDeadlineShort(getGoalDeadline(habit, membership))}</div>`;
+    } else if (frequency === 'weekly') {
+        scheduleMarkup = '<div class="habit-deadline" aria-label="Schedule">Once a week</div>';
+    } else if (frequency === 'monthly') {
+        scheduleMarkup = '<div class="habit-deadline" aria-label="Schedule">Once a month</div>';
+    } else {
+        scheduleMarkup = `<div class="habit-progress" aria-label="Scheduled days">${renderDayDots(membership?.days)}</div>`;
+    }
 
     return `
         <article
@@ -295,9 +313,20 @@ export function renderHabits() {
     habitsList.querySelectorAll('[data-complete-habit]').forEach((input) => {
         input.addEventListener('change', async (e) => {
             e.stopPropagation();
-            await toggleCompletion(input.dataset.completeHabit);
+            const habitId = input.dataset.completeHabit;
+            const ok = await toggleCompletion(habitId);
             renderHabits();
             renderChart();
+
+            if (!ok) return;
+
+            const membership = getMembership(habitId);
+            const nowChecked = (membership?.completed_dates || []).includes(todayDateString());
+            if (nowChecked) {
+                openCompletionCommentModal(habitId);
+            } else {
+                await removeCompletion(habitId);
+            }
         });
     });
 
@@ -499,8 +528,9 @@ async function deleteHabitForEveryone() {
     }
 }
 
-export function showJoinHabit() {
-    const labels = activeLabels();
+export function showJoinHabit(itemType = null) {
+    joinItemType = itemType || activeItemType();
+    const labels = getItemLabels(joinItemType);
     joinSelectedHabitId = null;
     joinSelectedDays = [];
     document.getElementById('join-modal-title').textContent = labels.joinModal;
@@ -510,9 +540,17 @@ export function showJoinHabit() {
         dayLabel.textContent = `Pick the days you'll do this ${labels.singular}`;
     }
     renderJoinHabitList();
+    document.getElementById('join-frequency-section').classList.add('hidden');
     document.getElementById('join-day-section').classList.add('hidden');
     document.getElementById('join-deadline-section').classList.add('hidden');
     document.getElementById('join-habit-modal').classList.remove('hidden');
+}
+
+export function openJoinModalForHabit(habitId) {
+    const habit = state.habits.find((h) => h.id === habitId);
+    if (!habit) return;
+    showJoinHabit(getHabitItemType(habit));
+    selectJoinHabit(habitId);
 }
 
 export function closeJoinHabit() {
@@ -523,8 +561,8 @@ export function closeJoinHabit() {
 
 function renderJoinHabitList() {
     const container = document.getElementById('join-habit-list');
-    const labels = activeLabels();
-    const unjoined = getUnjoinedHabits(activeItemType());
+    const labels = getItemLabels(joinItemType || activeItemType());
+    const unjoined = getUnjoinedHabits(joinItemType || activeItemType());
 
     if (unjoined.length === 0) {
         container.innerHTML = `<p class="join-empty">You've joined every ${labels.singular}! Create a new one to share.</p>`;
@@ -539,28 +577,39 @@ function renderJoinHabitList() {
     `).join('');
 
     container.querySelectorAll('[data-join-pick]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const habit = state.habits.find((h) => h.id === btn.dataset.joinPick);
-            const isGoal = habit && getHabitItemType(habit) === 'goal';
-            joinSelectedHabitId = btn.dataset.joinPick;
-            joinSelectedDays = isGoal ? [] : [0, 1, 2, 3, 4, 5, 6];
-            renderJoinHabitList();
-
-            if (isGoal) {
-                document.getElementById('join-day-section').classList.add('hidden');
-                const deadlineSection = document.getElementById('join-deadline-section');
-                const deadlineDisplay = document.getElementById('join-deadline-display');
-                deadlineSection?.classList.remove('hidden');
-                if (deadlineDisplay) {
-                    deadlineDisplay.textContent = formatDeadlineShort(getGoalDeadline(habit));
-                }
-            } else {
-                document.getElementById('join-deadline-section').classList.add('hidden');
-                document.getElementById('join-day-section').classList.remove('hidden');
-                renderJoinDayPicker();
-            }
-        });
+        btn.addEventListener('click', () => selectJoinHabit(btn.dataset.joinPick));
     });
+}
+
+function selectJoinHabit(habitId) {
+    const habit = state.habits.find((h) => h.id === habitId);
+    const isGoal = habit && getHabitItemType(habit) === 'goal';
+    joinSelectedHabitId = habitId;
+    joinSelectedDays = isGoal ? [] : [0, 1, 2, 3, 4, 5, 6];
+    renderJoinHabitList();
+
+    if (isGoal) {
+        document.getElementById('join-frequency-section').classList.add('hidden');
+        document.getElementById('join-day-section').classList.add('hidden');
+        const deadlineSection = document.getElementById('join-deadline-section');
+        const deadlineDisplay = document.getElementById('join-deadline-display');
+        const deadlineInput = document.getElementById('join-goal-deadline');
+        deadlineSection?.classList.remove('hidden');
+        const groupDeadline = getGoalDeadline(habit);
+        if (deadlineInput) deadlineInput.value = groupDeadline || '';
+        if (deadlineDisplay) {
+            deadlineDisplay.textContent = groupDeadline
+                ? `Group deadline: ${formatDeadlineShort(groupDeadline)} — set your own if you like.`
+                : 'Pick the date you want to finish by.';
+        }
+    } else {
+        document.getElementById('join-deadline-section').classList.add('hidden');
+        const freqSelect = document.getElementById('join-frequency');
+        if (freqSelect) freqSelect.value = 'days';
+        document.getElementById('join-frequency-section').classList.remove('hidden');
+        document.getElementById('join-day-section').classList.remove('hidden');
+        renderJoinDayPicker();
+    }
 }
 
 function renderJoinDayPicker() {
@@ -589,25 +638,34 @@ function renderJoinDayPicker() {
 }
 
 async function submitJoin() {
-    const labels = activeLabels();
+    const labels = getItemLabels(joinItemType || activeItemType());
     if (!joinSelectedHabitId) {
         alert(`Pick a ${labels.singular} first`);
         return;
     }
 
-    const ok = await joinHabit(joinSelectedHabitId, joinSelectedDays);
+    const frequency = document.getElementById('join-frequency')?.value || 'days';
+    const goalDeadline = document.getElementById('join-goal-deadline')?.value || null;
+    const joinedHabitId = joinSelectedHabitId;
+
+    const ok = await joinHabit(joinedHabitId, joinSelectedDays, { frequency, goalDeadline });
 
     if (ok) {
         closeJoinHabit();
         await loadHabits();
-        selectChatHabit(joinSelectedHabitId);
+        selectChatHabit(joinedHabitId);
         await loadMessages();
     }
 }
 
+export function showCreateHabitOfType(itemType) {
+    createItemTypeOverride = itemType;
+    showCreateHabit();
+}
+
 export function showCreateHabit() {
-    const labels = activeLabels();
-    const isGoal = activeItemType() === 'goal';
+    const labels = getItemLabels(createItemType());
+    const isGoal = createItemType() === 'goal';
     const modal = document.getElementById('create-habit-modal');
     modal.querySelector('.modal-header h2').textContent = labels.createModal;
     document.getElementById('habit-title').placeholder = `${labels.singularCap} title`;
@@ -619,6 +677,7 @@ export function showCreateHabit() {
 }
 
 export function closeCreateHabit() {
+    createItemTypeOverride = null;
     document.getElementById('create-habit-modal').classList.add('hidden');
     document.getElementById('habit-title').value = '';
     document.getElementById('habit-description').value = '';
@@ -636,8 +695,8 @@ export function closeCreateHabit() {
 }
 
 export async function createHabit() {
-    const labels = activeLabels();
-    const itemType = activeItemType();
+    const itemType = createItemType();
+    const labels = getItemLabels(itemType);
     const title = document.getElementById('habit-title').value.trim();
     const description = document.getElementById('habit-description').value.trim();
     const goal = document.getElementById('habit-goal').value.trim();
@@ -760,7 +819,7 @@ function initCreateDayPicker() {
 
 export function bindHabitEvents() {
     document.getElementById('create-habit-btn').addEventListener('click', showCreateHabit);
-    document.getElementById('join-habit-btn').addEventListener('click', showJoinHabit);
+    document.getElementById('join-habit-btn').addEventListener('click', () => showJoinHabit());
     document.getElementById('create-habit-submit').addEventListener('click', createHabit);
     document.getElementById('delete-habit-btn').addEventListener('click', deleteHabit);
     document.getElementById('join-modal-submit').addEventListener('click', submitJoin);
@@ -768,5 +827,10 @@ export function bindHabitEvents() {
     document.getElementById('edit-habit-save').addEventListener('click', saveEditHabit);
     document.getElementById('edit-leave-btn').addEventListener('click', leaveHabitFromEdit);
     document.getElementById('edit-delete-all-btn').addEventListener('click', deleteHabitForEveryone);
+    document.getElementById('join-frequency').addEventListener('change', (e) => {
+        const showDays = e.target.value === 'days';
+        document.getElementById('join-day-section').classList.toggle('hidden', !showDays);
+        if (showDays) renderJoinDayPicker();
+    });
     initCreateDayPicker();
 }

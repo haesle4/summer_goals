@@ -1,0 +1,112 @@
+<div class="home-page">
+  <header class="top-nav">
+    <div class="nav-brand">
+      <span class="nav-brand__sun" aria-hidden="true">☼</span>
+      <h1 class="nav-logo">
+        Summer Goals <span class="nav-group-name">- Kurma</span>
+      </h1>
+    </div>
+    <img
+      class="nav-illustration"
+      src="assets/beach-illustration.png"
+      alt=""
+      aria-hidden="true"
+    />
+    <button type="button" class="toolbar-btn" id="my-progress-btn">
+      <span class="toolbar-btn__icon" aria-hidden="true">☼</span>
+      My summer goals
+    </button>
+  </header>
+
+  <div class="home-layout">
+    <aside class="collective-col">
+      <div class="collective-header">
+        <h2 class="feed-heading">Group habits &amp; goals</h2>
+        <div class="collective-add-btns">
+          <button
+            type="button"
+            class="collective-add-btn collective-add-btn--habit"
+            id="add-habit-home-btn"
+          >
+            + Habit
+          </button>
+          <button
+            type="button"
+            class="collective-add-btn collective-add-btn--goal"
+            id="add-goal-home-btn"
+          >
+            + Goal
+          </button>
+        </div>
+      </div>
+      <div id="collective-list" class="collective-list"></div>
+    </aside>
+
+    <main class="home-main-col">
+      <section class="home-stats">
+        <div class="home-stat">
+          <span class="home-stat-number" id="stat-habits-completed">0</span>
+          <span class="home-stat-label">Habits completed</span>
+        </div>
+        <div class="home-stat">
+          <span class="home-stat-number" id="stat-goals-completed">0</span>
+          <span class="home-stat-label">Goals completed</span>
+        </div>
+        <div class="home-stat">
+          <span class="home-stat-number" id="stat-summer-days">0</span>
+          <span class="home-stat-label">Days of summer</span>
+        </div>
+      </section>
+
+      <section class="feed-wrap">
+        <h2 class="feed-heading">Recent activity</h2>
+        <div id="feed-list" class="feed-list"></div>
+      </section>
+    </main>
+
+    <aside class="home-right-col">
+      <section class="home-panel home-leaderboard">
+        <div class="home-panel-header">
+          <h2 class="feed-heading">Leaderboard</h2>
+          <div class="home-lb-nav">
+            <button
+              type="button"
+              class="home-lb-arrow"
+              id="home-lb-prev"
+              aria-label="Previous category"
+            >
+              ‹
+            </button>
+            <span class="home-lb-category" id="home-lb-category">Overall</span>
+            <button
+              type="button"
+              class="home-lb-arrow"
+              id="home-lb-next"
+              aria-label="Next category"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+        <ol id="home-lb-list" class="home-lb-list"></ol>
+      </section>
+
+      <section class="home-panel home-chat">
+        <h2 class="feed-heading">General chat</h2>
+        <div
+          id="home-chat-messages"
+          class="chat-messages home-chat-messages"
+        ></div>
+        <div class="chat-input-row">
+          <input
+            type="text"
+            id="home-chat-input"
+            class="chat-input"
+            placeholder="Enter your message"
+            maxlength="200"
+          />
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>

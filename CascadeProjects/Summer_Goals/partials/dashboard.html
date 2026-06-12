@@ -2,7 +2,9 @@
   <header class="top-nav">
     <div class="nav-brand">
       <span class="nav-brand__sun" aria-hidden="true">☼</span>
-      <h1 class="nav-logo">Summer Goals</h1>
+      <h1 class="nav-logo">
+        Summer Goals <span class="nav-group-name">- Kurma</span>
+      </h1>
     </div>
     <img
       class="nav-illustration"
@@ -11,12 +13,38 @@
       aria-hidden="true"
     />
     <div class="nav-profile">
-      <button type="button" class="nav-avatar" id="nav-avatar" aria-label="Profile menu">
+      <button type="button" class="toolbar-btn nav-home-btn" id="home-btn">
+        <span class="toolbar-btn__icon" aria-hidden="true">☼</span>
+        Home
+      </button>
+      <button
+        type="button"
+        class="nav-avatar"
+        id="nav-avatar"
+        aria-label="Profile menu"
+      >
         <span id="avatar-initial">M</span>
       </button>
-      <button type="button" class="nav-chevron" id="profile-toggle" aria-label="Open menu">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <button
+        type="button"
+        class="nav-chevron"
+        id="profile-toggle"
+        aria-label="Open menu"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M6 9L12 15L18 9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </button>
       <div id="profile-menu" class="profile-menu hidden">
@@ -26,10 +54,38 @@
   </header>
 
   <div class="dashboard-toolbar">
-    <div class="segmented-control" role="tablist" aria-label="Dashboard sections">
-      <button type="button" class="segment active" data-tab="habits" role="tab" aria-selected="true">My Habits</button>
-      <button type="button" class="segment" data-tab="goals" role="tab" aria-selected="false">My Goals</button>
-      <button type="button" class="segment" data-tab="standings" role="tab" aria-selected="false">My Standings</button>
+    <div
+      class="segmented-control"
+      role="tablist"
+      aria-label="Dashboard sections"
+    >
+      <button
+        type="button"
+        class="segment active"
+        data-tab="habits"
+        role="tab"
+        aria-selected="true"
+      >
+        My Habits
+      </button>
+      <button
+        type="button"
+        class="segment"
+        data-tab="goals"
+        role="tab"
+        aria-selected="false"
+      >
+        My Goals
+      </button>
+      <button
+        type="button"
+        class="segment"
+        data-tab="standings"
+        role="tab"
+        aria-selected="false"
+      >
+        My Standings
+      </button>
     </div>
     <div class="toolbar-actions" id="toolbar-actions">
       <button type="button" class="toolbar-btn" id="join-habit-btn">
@@ -55,19 +111,27 @@
       <div class="chart-card">
         <div class="chart-card-inner">
           <h2 class="chart-title" id="chart-title-text">Habits Completed</h2>
-          <p class="chart-subtitle" id="chart-subtitle-text">Bright = done · faded = still to do</p>
+          <p class="chart-subtitle" id="chart-subtitle-text">
+            Bright = done · faded = still to do
+          </p>
           <div id="habit-chart-view">
             <div class="chart-legend">
               <div class="chart-legend-item">
-                <span class="chart-legend-swatch chart-legend-swatch--wellness"></span>
+                <span
+                  class="chart-legend-swatch chart-legend-swatch--wellness"
+                ></span>
                 <span>Wellness</span>
               </div>
               <div class="chart-legend-item">
-                <span class="chart-legend-swatch chart-legend-swatch--social"></span>
+                <span
+                  class="chart-legend-swatch chart-legend-swatch--social"
+                ></span>
                 <span>Social</span>
               </div>
               <div class="chart-legend-item">
-                <span class="chart-legend-swatch chart-legend-swatch--learning"></span>
+                <span
+                  class="chart-legend-swatch chart-legend-swatch--learning"
+                ></span>
                 <span>Learning</span>
               </div>
             </div>
@@ -92,22 +156,44 @@
           <div id="goal-calendar-view" class="hidden">
             <div class="goal-calendar-legend">
               <span class="goal-calendar-legend-item">
-                <span class="goal-calendar-legend-swatch goal-calendar-legend-swatch--overdue"></span>
+                <span
+                  class="goal-calendar-legend-swatch goal-calendar-legend-swatch--overdue"
+                ></span>
                 Overdue
               </span>
               <span class="goal-calendar-legend-item">
-                <span class="goal-calendar-legend-swatch goal-calendar-legend-swatch--done"></span>
+                <span
+                  class="goal-calendar-legend-swatch goal-calendar-legend-swatch--done"
+                ></span>
                 Done
               </span>
               <span class="goal-calendar-legend-item">
-                <span class="goal-calendar-legend-swatch goal-calendar-legend-swatch--future"></span>
+                <span
+                  class="goal-calendar-legend-swatch goal-calendar-legend-swatch--future"
+                ></span>
                 Upcoming
               </span>
             </div>
             <div class="goal-calendar-nav">
-              <button type="button" class="goal-calendar-nav-btn" id="calendar-prev" aria-label="Previous month">‹</button>
-              <span class="goal-calendar-month-title" id="calendar-month-title">June 2026</span>
-              <button type="button" class="goal-calendar-nav-btn" id="calendar-next" aria-label="Next month">›</button>
+              <button
+                type="button"
+                class="goal-calendar-nav-btn"
+                id="calendar-prev"
+                aria-label="Previous month"
+              >
+                ‹
+              </button>
+              <span class="goal-calendar-month-title" id="calendar-month-title"
+                >June 2026</span
+              >
+              <button
+                type="button"
+                class="goal-calendar-nav-btn"
+                id="calendar-next"
+                aria-label="Next month"
+              >
+                ›
+              </button>
             </div>
             <div id="goal-calendar" class="goal-calendar-grid-wrap"></div>
           </div>
@@ -118,7 +204,11 @@
         <div class="chat-card-inner">
           <div class="chat-header">
             <h2 class="chat-title" id="chat-title-text">General chat</h2>
-            <select id="chat-habit-select" class="chat-habit-select" aria-label="Select habit chat"></select>
+            <select
+              id="chat-habit-select"
+              class="chat-habit-select"
+              aria-label="Select habit chat"
+            ></select>
           </div>
           <div id="chat-messages" class="chat-messages"></div>
           <div class="chat-input-row">

@@ -7,13 +7,15 @@ export async function loadPartial(path) {
 }
 
 export async function mountPartials() {
-    const [authHtml, dashboardHtml, modalsHtml] = await Promise.all([
+    const [authHtml, homeHtml, dashboardHtml, modalsHtml] = await Promise.all([
         loadPartial('partials/auth.html'),
+        loadPartial('partials/home.html'),
         loadPartial('partials/dashboard.html'),
         loadPartial('partials/modals.html'),
     ]);
 
     document.getElementById('auth-root').innerHTML = authHtml;
+    document.getElementById('home-root').innerHTML = homeHtml;
     document.getElementById('app-root').innerHTML = dashboardHtml;
     document.getElementById('modals-root').innerHTML = modalsHtml;
 }
