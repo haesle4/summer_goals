@@ -32,10 +32,10 @@ function goalsByDate() {
     const goals = getJoinedHabits('goal');
 
     goals.forEach((habit) => {
-        const deadline = getGoalDeadline(habit);
-        if (!deadline) return;
         const membership = state.membershipsByHabit[habit.id];
         if (!membership) return;
+        const deadline = getGoalDeadline(habit, membership);
+        if (!deadline) return;
         if (!map[deadline]) map[deadline] = [];
         map[deadline].push({ habit, membership });
     });
@@ -46,7 +46,7 @@ function goalsByDate() {
 function cellStatus(goalsOnDay) {
     if (!goalsOnDay.length) return 'empty';
     const statuses = goalsOnDay.map(({ habit, membership }) =>
-        getGoalDayStatus(getGoalDeadline(habit), membership));
+        getGoalDayStatus(getGoalDeadline(habit, membership), membership));
 
     if (statuses.includes('overdue')) return 'overdue';
     if (statuses.every((s) => s === 'done')) return 'done';

@@ -48,3 +48,33 @@ SELECT h.id, p.username, ARRAY[0, 1, 2, 3, 4, 5, 6]
 FROM habits h
 CROSS JOIN LATERAL unnest(h.participants) AS p(username)
 ON CONFLICT (habit_id, username) DO NOTHING;
+
+-- Schedule frequency per member: 'days' = specific weekdays, 'weekly' = once a week, 'monthly' = once a month
+ALTER TABLE habit_memberships ADD COLUMN IF NOT EXISTS frequency TEXT DEFAULT 'days';
+
+-- Per-user finish-by date for goals (overrides the creator's group deadline for that member)
+ALTER TABLE habit_memberships ADD COLUMN IF NOT EXISTS goal_deadline DATE;
+
+-- Completion events with optional comment, powers the home-page activity feed
+CREATE TABLE IF NOT EXISTS completions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    habit_id UUID NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    completed_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    comment TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE completions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can read completions" ON completions;
+CREATE POLICY "Anyone can read completions" ON completions
+    FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anyone can insert completions" ON completions;
+CREATE POLICY "Anyone can insert completions" ON completions
+    FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anyone can delete completions" ON completions;
+CREATE POLICY "Anyone can delete completions" ON completions
+    FOR DELETE USING (true);

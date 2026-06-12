@@ -3,6 +3,7 @@ import { state } from './state.js';
 
 export function showAuth() {
     document.getElementById('auth-root').classList.remove('hidden');
+    document.getElementById('home-root').classList.add('hidden');
     document.getElementById('app-root').classList.add('hidden');
 }
 
