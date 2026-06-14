@@ -9,6 +9,8 @@ export const state = {
     commentCounts: {},
     messages: [],
     feed: [],
+    homeTimeRange: 'weekly',
+    trackingStartDate: null,
     dashboardTab: 'habits',
     calendarMonthIndex: 0,
 };

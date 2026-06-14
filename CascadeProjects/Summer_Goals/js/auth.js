@@ -1,20 +1,37 @@
 import { supabaseClient } from './supabase.js';
 import { state } from './state.js';
+import { isHomePage, isMySummerPage, navigateAfterLogin } from './page.js';
 
 export function showAuth() {
     document.getElementById('auth-root').classList.remove('hidden');
-    document.getElementById('home-root').classList.add('hidden');
-    document.getElementById('app-root').classList.add('hidden');
+    if (isHomePage()) {
+        document.getElementById('home-root').classList.add('hidden');
+    }
+    if (isMySummerPage()) {
+        document.getElementById('app-root').classList.add('hidden');
+    }
 }
 
-export async function showApp(onReady) {
+function setAvatarInitials() {
+    const initial = state.currentUser?.charAt(0).toUpperCase() || 'M';
+    const avatarEl = document.getElementById('avatar-initial');
+    const homeAvatarEl = document.getElementById('home-avatar-initial');
+    if (avatarEl) avatarEl.textContent = initial;
+    if (homeAvatarEl) homeAvatarEl.textContent = initial;
+}
+
+export function showHomePage(onReady) {
+    document.getElementById('auth-root').classList.add('hidden');
+    document.getElementById('home-root').classList.remove('hidden');
+    setAvatarInitials();
+    if (onReady) return onReady();
+}
+
+export function showMySummerPage(onReady) {
     document.getElementById('auth-root').classList.add('hidden');
     document.getElementById('app-root').classList.remove('hidden');
-
-    const initial = state.currentUser?.charAt(0).toUpperCase() || 'M';
-    document.getElementById('avatar-initial').textContent = initial;
-
-    if (onReady) await onReady();
+    setAvatarInitials();
+    if (onReady) return onReady();
 }
 
 export function showLogin() {
@@ -120,8 +137,7 @@ export async function signup() {
 export function logout() {
     state.currentUser = null;
     localStorage.removeItem('currentUser');
-    showAuth();
-    showLogin();
+    navigateAfterLogin();
 }
 
 export function bindAuthEvents({ onAuthenticated }) {
@@ -136,11 +152,23 @@ export function bindAuthEvents({ onAuthenticated }) {
     });
 
     document.getElementById('login-btn').addEventListener('click', async () => {
-        if (await login()) await onAuthenticated();
+        if (await login()) {
+            if (isHomePage()) {
+                await onAuthenticated();
+            } else {
+                navigateAfterLogin();
+            }
+        }
     });
 
     document.getElementById('signup-btn').addEventListener('click', async () => {
-        if (await signup()) await onAuthenticated();
+        if (await signup()) {
+            if (isHomePage()) {
+                await onAuthenticated();
+            } else {
+                navigateAfterLogin();
+            }
+        }
     });
 
     document.getElementById('login-username').addEventListener('keypress', (e) => {
@@ -148,7 +176,13 @@ export function bindAuthEvents({ onAuthenticated }) {
     });
 
     document.getElementById('login-password').addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter' && (await login())) await onAuthenticated();
+        if (e.key === 'Enter' && (await login())) {
+            if (isHomePage()) {
+                await onAuthenticated();
+            } else {
+                navigateAfterLogin();
+            }
+        }
     });
 
     document.getElementById('signup-username').addEventListener('keypress', (e) => {
@@ -160,25 +194,42 @@ export function bindAuthEvents({ onAuthenticated }) {
     });
 
     document.getElementById('signup-confirm').addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter' && (await signup())) await onAuthenticated();
+        if (e.key === 'Enter' && (await signup())) {
+            if (isHomePage()) {
+                await onAuthenticated();
+            } else {
+                navigateAfterLogin();
+            }
+        }
     });
 }
 
 export function bindProfileEvents() {
-    const menu = document.getElementById('profile-menu');
-    const toggle = () => menu.classList.toggle('hidden');
+    const bindProfile = (toggleId, avatarId, menuId, logoutId) => {
+        const menu = document.getElementById(menuId);
+        const toggle = document.getElementById(toggleId);
+        const avatar = document.getElementById(avatarId);
+        const logoutBtn = document.getElementById(logoutId);
+        if (!menu || !toggle || !avatar || !logoutBtn) return;
 
-    document.getElementById('profile-toggle').addEventListener('click', toggle);
-    document.getElementById('nav-avatar').addEventListener('click', toggle);
+        const toggleMenu = () => menu.classList.toggle('hidden');
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        menu.classList.add('hidden');
-        logout();
-    });
+        toggle.addEventListener('click', toggleMenu);
+        avatar.addEventListener('click', toggleMenu);
+        logoutBtn.addEventListener('click', () => {
+            menu.classList.add('hidden');
+            logout();
+        });
+    };
+
+    bindProfile('profile-toggle', 'nav-avatar', 'profile-menu', 'logout-btn');
+    bindProfile('home-profile-toggle', 'home-nav-avatar', 'home-profile-menu', 'home-logout-btn');
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.nav-profile')) {
-            menu.classList.add('hidden');
+            document.querySelectorAll('.profile-menu').forEach((menu) => {
+                menu.classList.add('hidden');
+            });
         }
     });
 }

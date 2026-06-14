@@ -1,3 +1,5 @@
+import { isHomePage, isMySummerPage } from './page.js';
+
 export async function loadPartial(path) {
     const response = await fetch(path);
     if (!response.ok) {
@@ -7,15 +9,30 @@ export async function loadPartial(path) {
 }
 
 export async function mountPartials() {
-    const [authHtml, homeHtml, dashboardHtml, modalsHtml] = await Promise.all([
-        loadPartial('partials/auth.html'),
-        loadPartial('partials/home.html'),
-        loadPartial('partials/dashboard.html'),
-        loadPartial('partials/modals.html'),
-    ]);
+    const loads = [
+        loadPartial('partials/auth.html').then((html) => {
+            document.getElementById('auth-root').innerHTML = html;
+        }),
+        loadPartial('partials/modals.html').then((html) => {
+            document.getElementById('modals-root').innerHTML = html;
+        }),
+    ];
 
-    document.getElementById('auth-root').innerHTML = authHtml;
-    document.getElementById('home-root').innerHTML = homeHtml;
-    document.getElementById('app-root').innerHTML = dashboardHtml;
-    document.getElementById('modals-root').innerHTML = modalsHtml;
+    if (isHomePage()) {
+        loads.push(
+            loadPartial('partials/home.html').then((html) => {
+                document.getElementById('home-root').innerHTML = html;
+            }),
+        );
+    }
+
+    if (isMySummerPage()) {
+        loads.push(
+            loadPartial('partials/dashboard.html').then((html) => {
+                document.getElementById('app-root').innerHTML = html;
+            }),
+        );
+    }
+
+    await Promise.all(loads);
 }

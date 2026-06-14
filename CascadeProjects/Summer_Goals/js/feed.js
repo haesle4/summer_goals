@@ -1,6 +1,6 @@
 import { supabaseClient } from './supabase.js';
 import { state, SUMMER_YEAR } from './state.js';
-import { escapeHtml, todayDateString, getHabitItemType, MONTH_NAMES } from './utils.js';
+import { escapeHtml, todayDateString, getHabitCategory } from './utils.js';
 import {
     enableLocalCompletions,
     isLocalCompletions,
@@ -9,16 +9,17 @@ import {
     removeLocalCompletion,
     showLocalDevBanner,
 } from './local-dev.js';
+import { loadHomeProgress } from './home-progress.js';
+import {
+    countStatsCompletions,
+    dateInHomeRange,
+    getHomeTimeRange,
+    setHomeTimeRange,
+    syncTrackingStart,
+} from './home-range.js';
+import { fetchAllMemberships } from './leaderboard.js';
 
-export function showHomeView() {
-    document.getElementById('home-root').classList.remove('hidden');
-    document.getElementById('app-root').classList.add('hidden');
-}
-
-export function showProgressView() {
-    document.getElementById('home-root').classList.add('hidden');
-    document.getElementById('app-root').classList.remove('hidden');
-}
+import { navigateToHome, navigateToMySummer } from './page.js';
 
 function summerDaysElapsed() {
     const start = new Date(SUMMER_YEAR, 5, 15);
@@ -27,22 +28,8 @@ function summerDaysElapsed() {
     return Math.floor((today - start) / 86400000);
 }
 
-function countCompletions(memberships) {
-    let habits = 0;
-    let goals = 0;
-
-    memberships.forEach((m) => {
-        const done = (m.completed_dates || []).length;
-        if (!done) return;
-        const habit = state.habits.find((h) => h.id === m.habit_id);
-        if (habit && getHabitItemType(habit) === 'goal') {
-            goals += done;
-        } else {
-            habits += done;
-        }
-    });
-
-    return { habits, goals };
+function countCompletions(memberships, range = getHomeTimeRange()) {
+    return countStatsCompletions(memberships, range);
 }
 
 function renderHomeStats({ habits, goals }) {
@@ -56,18 +43,9 @@ function renderHomeStats({ habits, goals }) {
 }
 
 export async function loadHomeStats() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('habit_memberships')
-            .select('habit_id, completed_dates');
-
-        if (error) throw error;
-
-        renderHomeStats(countCompletions(data || []));
-    } catch (error) {
-        console.warn('group stats unavailable — using local data', error);
-        renderHomeStats(countCompletions(state.memberships));
-    }
+    const memberships = await fetchAllMemberships();
+    syncTrackingStart(memberships);
+    renderHomeStats(countCompletions(memberships, getHomeTimeRange()));
 }
 
 export async function loadFeed() {
@@ -76,6 +54,7 @@ export async function loadFeed() {
     if (isLocalCompletions()) {
         state.feed = loadLocalCompletions();
         renderFeed();
+        await loadHomeProgress();
         return;
     }
 
@@ -97,6 +76,8 @@ export async function loadFeed() {
         state.feed = loadLocalCompletions();
         renderFeed();
     }
+
+    await loadHomeProgress();
 }
 
 export async function logCompletion(habitId, comment) {
@@ -152,54 +133,54 @@ export async function removeCompletion(habitId) {
     await loadFeed();
 }
 
-function formatFeedDate(dateKey) {
-    if (!dateKey) return '';
-    const [, m, d] = String(dateKey).slice(0, 10).split('-').map(Number);
-    const month = MONTH_NAMES[m - 1]?.slice(0, 3) || '';
-    return `${month} ${d}`;
-}
+function formatFeedTimestamp(event) {
+    const raw = event.created_at || event.completed_date;
+    if (!raw) return '';
 
-function completedUsersFor(habitId, dateKey) {
-    const users = state.feed
-        .filter((c) => c.habit_id === habitId && String(c.completed_date || '').slice(0, 10) === dateKey)
-        .map((c) => c.username);
-    return [...new Set(users)];
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) {
+        const dateKey = String(event.completed_date || '').slice(0, 10);
+        return dateKey || '';
+    }
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}, ${hh}:${min}`;
 }
 
 export function renderFeed() {
     const list = document.getElementById('feed-list');
     if (!list) return;
 
-    if (state.feed.length === 0) {
-        list.innerHTML = '<p class="feed-empty">No activity yet. Check off a habit to get things going!</p>';
+    const range = getHomeTimeRange();
+    const filtered = state.feed.filter((event) =>
+        dateInHomeRange(event.completed_date, range));
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<p class="feed-empty">No activity in this time range yet.</p>';
         return;
     }
 
-    list.innerHTML = state.feed.map((event) => {
+    list.innerHTML = filtered.map((event) => {
         const habit = state.habits.find((h) => h.id === event.habit_id);
         const title = habit ? habit.title : 'Unknown habit';
-        const dateKey = String(event.completed_date || '').slice(0, 10);
-        const completed = completedUsersFor(event.habit_id, dateKey);
-        const participants = habit?.participants || [];
-        const pending = participants.filter((p) => !completed.includes(p));
+        const category = habit ? getHabitCategory(habit) : 'wellness';
 
         return `
-            <article class="feed-card">
-                <div class="feed-card-header">
+            <article class="feed-card feed-card--${category}">
+                <div class="feed-card-top">
                     <h3 class="feed-card-title">${escapeHtml(title)}</h3>
-                    <span class="feed-card-date">${formatFeedDate(dateKey)}</span>
+                    <time class="feed-card-date">${formatFeedTimestamp(event)}</time>
                 </div>
-                <p class="feed-card-user">${escapeHtml(event.username)} checked this off</p>
-                ${event.comment ? `<p class="feed-card-comment">&ldquo;${escapeHtml(event.comment)}&rdquo;</p>` : ''}
-                <div class="feed-card-footer">
-                    <div class="feed-card-group feed-card-group--done">
-                        <span class="feed-card-group-label">Completed</span>
-                        <span class="feed-card-group-names">${completed.length ? completed.map(escapeHtml).join(', ') : '—'}</span>
+                <div class="feed-card-body">
+                    <div class="feed-card-meta">
+                        <span class="feed-card-completed-label">Completed by:</span>
+                        <span class="feed-card-user">${escapeHtml(event.username)}</span>
                     </div>
-                    <div class="feed-card-group feed-card-group--pending">
-                        <span class="feed-card-group-label">Still to go</span>
-                        <span class="feed-card-group-names">${pending.length ? pending.map(escapeHtml).join(', ') : 'Everyone is done!'}</span>
-                    </div>
+                    ${event.comment ? `<div class="feed-card-quote">&ldquo;${escapeHtml(event.comment)}&rdquo;</div>` : '<div class="feed-card-quote feed-card-quote--empty"></div>'}
                 </div>
             </article>
         `;
@@ -230,12 +211,26 @@ async function finishCompletionComment(comment) {
 }
 
 export function bindFeedEvents() {
-    document.getElementById('my-progress-btn').addEventListener('click', showProgressView);
+    const progressBtn = document.getElementById('my-progress-btn');
+    if (progressBtn) {
+        progressBtn.addEventListener('click', navigateToMySummer);
+    }
 
-    document.getElementById('home-btn').addEventListener('click', async () => {
-        showHomeView();
-        await loadFeed();
-    });
+    const rangeSelect = document.getElementById('home-time-range');
+    if (rangeSelect) {
+        rangeSelect.value = getHomeTimeRange();
+        rangeSelect.addEventListener('change', async (e) => {
+            setHomeTimeRange(e.target.value);
+            await loadHomeStats();
+            renderFeed();
+            await loadHomeProgress();
+        });
+    }
+
+    const homeBtn = document.getElementById('home-btn');
+    if (homeBtn) {
+        homeBtn.addEventListener('click', navigateToHome);
+    }
 
     document.getElementById('completion-comment-post').addEventListener('click', async () => {
         const comment = document.getElementById('completion-comment-input').value.trim();

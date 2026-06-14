@@ -59,10 +59,14 @@ export function renderCollectiveList() {
 }
 
 export function bindCollectiveEvents() {
-    document.getElementById('add-habit-home-btn').addEventListener('click', () => {
+    const habitBtn = document.getElementById('add-habit-home-btn');
+    const goalBtn = document.getElementById('add-goal-home-btn');
+    if (!habitBtn || !goalBtn) return;
+
+    habitBtn.addEventListener('click', () => {
         showCreateHabitOfType('habit');
     });
-    document.getElementById('add-goal-home-btn').addEventListener('click', () => {
+    goalBtn.addEventListener('click', () => {
         showCreateHabitOfType('goal');
     });
 }
