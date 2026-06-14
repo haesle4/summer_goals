@@ -2,7 +2,8 @@ import { mountPartials } from './templates.js';
 import {
     checkAuth,
     showAuth,
-    showApp,
+    showHomePage,
+    showMySummerPage,
     bindAuthEvents,
     bindProfileEvents,
 } from './auth.js';
@@ -11,22 +12,40 @@ import { bindDashboardTabs } from './dashboard.js';
 import { loadMessages, bindChatEvents, updateChatHeader } from './chat.js';
 import { bindCommentEvents } from './comments.js';
 import { bindModalEvents } from './modals.js';
-import { loadFeed, bindFeedEvents, showHomeView } from './feed.js';
-import { bindCollectiveEvents } from './collective.js';
+import { loadFeed, bindFeedEvents } from './feed.js';
 import { loadHomeChat, bindHomeChatEvents } from './home-chat.js';
-import { loadHomeLeaderboard, bindHomeLeaderboardEvents } from './home-leaderboard.js';
+import { bindHomeProgressEvents } from './home-progress.js';
 import { setupRealtimeSubscription } from './realtime.js';
+import { isHomePage, isMySummerPage, navigateAfterLogin } from './page.js';
+
+async function loadSharedData() {
+    await loadHabits();
+}
+
+async function loadHomeData() {
+    await loadSharedData();
+    await loadFeed();
+    await loadHomeChat();
+}
+
+async function loadMySummerData() {
+    await loadSharedData();
+    updateChatHeader();
+    await loadMessages();
+}
 
 async function onAuthenticated() {
-    await showApp(async () => {
-        await loadHabits();
-        updateChatHeader();
-        await loadMessages();
-        await loadFeed();
-        await loadHomeChat();
-        await loadHomeLeaderboard();
-    });
-    showHomeView();
+    if (isHomePage()) {
+        await showHomePage(loadHomeData);
+        return;
+    }
+
+    if (isMySummerPage()) {
+        await showMySummerPage(loadMySummerData);
+        return;
+    }
+
+    navigateAfterLogin();
 }
 
 async function initApp() {
@@ -34,15 +53,22 @@ async function initApp() {
 
     bindAuthEvents({ onAuthenticated });
     bindProfileEvents();
-    bindHabitEvents();
-    bindDashboardTabs();
-    bindChatEvents();
-    bindCommentEvents();
     bindModalEvents();
-    bindFeedEvents();
-    bindCollectiveEvents();
-    bindHomeChatEvents();
-    bindHomeLeaderboardEvents();
+
+    if (isHomePage()) {
+        bindFeedEvents();
+        bindHomeChatEvents();
+        bindHomeProgressEvents();
+    }
+
+    if (isMySummerPage()) {
+        bindHabitEvents();
+        bindDashboardTabs();
+        bindChatEvents();
+        bindCommentEvents();
+        bindFeedEvents();
+    }
+
     setupRealtimeSubscription();
 
     if (checkAuth()) {

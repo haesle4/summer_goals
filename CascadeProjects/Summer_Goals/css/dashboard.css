@@ -248,6 +248,14 @@
     box-shadow: 0 1px 1px var(--accent-yellow-shadow);
 }
 
+.nav-switch-btn {
+    height: 40px;
+    min-width: 132px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
 .toolbar-btn:hover {
     filter: brightness(0.97);
 }

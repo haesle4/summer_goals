@@ -5,7 +5,7 @@ import { loadComments } from './comments.js';
 import { loadMessages } from './chat.js';
 import { loadFeed } from './feed.js';
 import { loadHomeChat } from './home-chat.js';
-import { loadHomeLeaderboard } from './home-leaderboard.js';
+import { loadHomeProgress } from './home-progress.js';
 
 export function setupRealtimeSubscription() {
     supabaseClient
@@ -19,7 +19,7 @@ export function setupRealtimeSubscription() {
         .channel('memberships-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'habit_memberships' }, () => {
             loadHabits();
-            loadHomeLeaderboard();
+            loadHomeProgress();
         })
         .subscribe();
 
@@ -45,6 +45,7 @@ export function setupRealtimeSubscription() {
         .channel('completions-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'completions' }, () => {
             loadFeed();
+            loadHomeProgress();
         })
         .subscribe();
 }

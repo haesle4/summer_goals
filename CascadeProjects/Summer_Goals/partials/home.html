@@ -1,10 +1,8 @@
 <div class="home-page">
-  <header class="top-nav">
+  <header class="top-nav home-top-nav">
     <div class="nav-brand">
       <span class="nav-brand__sun" aria-hidden="true">☼</span>
-      <h1 class="nav-logo">
-        Summer Goals <span class="nav-group-name">- Kurma</span>
-      </h1>
+      <h1 class="nav-logo">Summer Goals</h1>
     </div>
     <img
       class="nav-illustration"
@@ -12,101 +10,149 @@
       alt=""
       aria-hidden="true"
     />
-    <button type="button" class="toolbar-btn" id="my-progress-btn">
-      <span class="toolbar-btn__icon" aria-hidden="true">☼</span>
-      My summer goals
-    </button>
+    <div class="nav-profile">
+      <button type="button" class="toolbar-btn nav-switch-btn" id="my-progress-btn">
+        <span class="toolbar-btn__icon" aria-hidden="true">☼</span>
+        My Summer
+      </button>
+      <button
+        type="button"
+        class="nav-avatar"
+        id="home-nav-avatar"
+        aria-label="Profile menu"
+      >
+        <span id="home-avatar-initial">M</span>
+      </button>
+      <button
+        type="button"
+        class="nav-chevron"
+        id="home-profile-toggle"
+        aria-label="Open menu"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M6 9L12 15L18 9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div id="home-profile-menu" class="profile-menu hidden">
+        <button type="button" id="home-logout-btn">Log out</button>
+      </div>
+    </div>
   </header>
 
-  <div class="home-layout">
-    <aside class="collective-col">
-      <div class="collective-header">
-        <h2 class="feed-heading">Group habits &amp; goals</h2>
-        <div class="collective-add-btns">
-          <button
-            type="button"
-            class="collective-add-btn collective-add-btn--habit"
-            id="add-habit-home-btn"
-          >
-            + Habit
-          </button>
-          <button
-            type="button"
-            class="collective-add-btn collective-add-btn--goal"
-            id="add-goal-home-btn"
-          >
-            + Goal
-          </button>
+  <main class="home-body">
+    <section class="home-stats" aria-label="Group summary">
+      <div class="home-stat">
+        <span class="home-stat-number" id="stat-habits-completed">0</span>
+        <span class="home-stat-label">Habits completed</span>
+      </div>
+      <div class="home-stat">
+        <span class="home-stat-number" id="stat-goals-completed">0</span>
+        <span class="home-stat-label">Goals completed</span>
+      </div>
+      <div class="home-stat">
+        <span class="home-stat-number" id="stat-summer-days">0</span>
+        <span class="home-stat-label">Days of summer</span>
+      </div>
+    </section>
+
+    <section class="home-progress-panel" aria-label="Group progress">
+      <div class="home-progress-card">
+        <div class="home-progress-inner">
+          <h2 class="home-progress-title">Group Progress</h2>
+          <div class="home-progress-legend" aria-hidden="true">
+            <span class="home-progress-legend-item">
+              <span class="home-progress-legend-swatch home-progress-legend-swatch--wellness"></span>
+              Wellness
+            </span>
+            <span class="home-progress-legend-item">
+              <span class="home-progress-legend-swatch home-progress-legend-swatch--social"></span>
+              Social
+            </span>
+            <span class="home-progress-legend-item">
+              <span class="home-progress-legend-swatch home-progress-legend-swatch--learning"></span>
+              Learning
+            </span>
+          </div>
+          <div id="home-progress-chart" class="home-progress-chart"></div>
+          <label class="home-progress-view" for="home-time-range">
+            <select id="home-time-range" class="home-time-range-select" aria-label="Time range">
+              <option value="daily">Daily view</option>
+              <option value="weekly" selected>Weekly view</option>
+              <option value="all">Up to now</option>
+            </select>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </label>
         </div>
       </div>
-      <div id="collective-list" class="collective-list"></div>
-    </aside>
+    </section>
 
-    <main class="home-main-col">
-      <section class="home-stats">
-        <div class="home-stat">
-          <span class="home-stat-number" id="stat-habits-completed">0</span>
-          <span class="home-stat-label">Habits completed</span>
-        </div>
-        <div class="home-stat">
-          <span class="home-stat-number" id="stat-goals-completed">0</span>
-          <span class="home-stat-label">Goals completed</span>
-        </div>
-        <div class="home-stat">
-          <span class="home-stat-number" id="stat-summer-days">0</span>
-          <span class="home-stat-label">Days of summer</span>
-        </div>
-      </section>
-
-      <section class="feed-wrap">
-        <h2 class="feed-heading">Recent activity</h2>
-        <div id="feed-list" class="feed-list"></div>
-      </section>
-    </main>
-
-    <aside class="home-right-col">
-      <section class="home-panel home-leaderboard">
-        <div class="home-panel-header">
-          <h2 class="feed-heading">Leaderboard</h2>
-          <div class="home-lb-nav">
-            <button
-              type="button"
-              class="home-lb-arrow"
-              id="home-lb-prev"
-              aria-label="Previous category"
-            >
-              ‹
-            </button>
-            <span class="home-lb-category" id="home-lb-category">Overall</span>
-            <button
-              type="button"
-              class="home-lb-arrow"
-              id="home-lb-next"
-              aria-label="Next category"
-            >
-              ›
-            </button>
+    <section class="home-bottom">
+      <div class="home-panel home-activity-panel">
+        <div class="home-panel-card">
+          <div class="home-panel-inner home-panel-inner--activity">
+            <h2 class="home-panel-title">Recent Activity</h2>
+            <div id="feed-list" class="feed-list"></div>
           </div>
         </div>
-        <ol id="home-lb-list" class="home-lb-list"></ol>
-      </section>
+      </div>
 
-      <section class="home-panel home-chat">
-        <h2 class="feed-heading">General chat</h2>
-        <div
-          id="home-chat-messages"
-          class="chat-messages home-chat-messages"
-        ></div>
-        <div class="chat-input-row">
-          <input
-            type="text"
-            id="home-chat-input"
-            class="chat-input"
-            placeholder="Enter your message"
-            maxlength="200"
-          />
+      <div class="home-panel home-chat-panel">
+        <div class="home-panel-card">
+          <div class="home-panel-inner home-panel-inner--chat">
+            <div class="home-chat-header">
+              <svg class="home-chat-header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h2 class="home-panel-title home-panel-title--chat">Habit chat</h2>
+            </div>
+            <div
+              id="home-chat-messages"
+              class="chat-messages home-chat-messages"
+            ></div>
+            <div class="chat-input-row home-chat-input-row">
+              <input
+                type="text"
+                id="home-chat-input"
+                class="chat-input home-chat-input"
+                placeholder="Enter your message"
+                maxlength="200"
+              />
+            </div>
+          </div>
         </div>
-      </section>
-    </aside>
-  </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <img
+      class="footer-deco footer-deco--sun"
+      src="assets/sun-shells.png"
+      alt=""
+      aria-hidden="true"
+    />
+    <p class="footer-quote">
+      Live in the sunshine. Swim in the sea. Drink in the wild air.
+    </p>
+    <img
+      class="footer-deco footer-deco--shells"
+      src="assets/sun-shells.png"
+      alt=""
+      aria-hidden="true"
+    />
+  </footer>
 </div>

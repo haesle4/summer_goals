@@ -82,7 +82,10 @@ async function sendHomeMessage() {
 }
 
 export function bindHomeChatEvents() {
-    document.getElementById('home-chat-input').addEventListener('keypress', async (e) => {
+    const input = document.getElementById('home-chat-input');
+    if (!input) return;
+
+    input.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') await sendHomeMessage();
     });
 }
